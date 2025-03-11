@@ -4,8 +4,7 @@ WITH ValidTrips AS (
     -- Step 1: Filter only trips where both client and driver are not banned
     SELECT 
     t.request_at, 
-    t.status,
-    IF(status="completed","No","Yes") as cancellation
+    t.status
     FROM Trips t
     JOIN Users c ON t.client_id = c.users_id
     JOIN Users d ON t.driver_id = d.users_id
@@ -17,8 +16,6 @@ WITH ValidTrips AS (
 -- Step 2: Calculate Cancellation Rate
 SELECT 
     request_at as Day,
-    ROUND(
-        SUM(CASE WHEN cancellation = 'Yes' THEN 1 ELSE 0 END) 
-        / COUNT(*) , 2) AS "Cancellation Rate"
+    round(sum(status in ('cancelled_by_driver', 'cancelled_by_client'))/count(*),2) AS "Cancellation Rate"
 FROM ValidTrips
 GROUP BY request_at;
